@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import mockUsers from "../users";
-import mockProducts from "../products";
+import mockProducts from "../Products";
 
 const Dashboard = () => {
   const usersFromSlice = useSelector((state) => state.auth.users || []);

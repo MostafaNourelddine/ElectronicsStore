@@ -6,7 +6,6 @@ import { useSelector } from "react-redux";
 import Home from "./Pages/Home";
 import Login from "./Pages/Login";
 import ResetPassword from "./Pages/ResetPassword";
-import Dashboard from "./admin/Dashboard";
 import AdminProducts from "./admin/Products";
 import AdminDashboard from "./admin/Dashboard";
 import AdminUsers from "./admin/Users";
