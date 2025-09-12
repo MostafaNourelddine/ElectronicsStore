@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-import Home from "./pages/Home";
+import Home from "./Pages/Home";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./admin/Dashboard";
