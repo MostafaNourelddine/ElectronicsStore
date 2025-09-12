@@ -4,7 +4,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import Home from "./pages/Home";
-import About from "./pages/About";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./admin/Dashboard";
@@ -41,7 +40,6 @@ export default function App() {
         }
       >
         <Route path="/" element={<Home searchTerm={searchTerm} />} />
-        <Route path="/about" element={<About />} />
         <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
       <Route path="/admin" element={<AdminLayout />}>
