@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import notify from "../utils/notify";
+import { validateRequired, hasErrors } from "../utils/validation";
 import { useDispatch, useSelector } from "react-redux";
 import { login, loginAsGuest } from "../slices/AuthSlice";
 import users from "../users";
@@ -12,10 +14,21 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const authUsers = useSelector((state) => state.auth.users);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const validationErrors = validateRequired({ username, password }, [
+      "username",
+      "password",
+    ]);
+    setErrors(validationErrors);
+    if (hasErrors(validationErrors)) {
+      notify.error("Please enter username and password");
+      return;
+    }
 
     const foundUser = sliceUsers.find(
       (u) => u.username === username && u.password === password
@@ -32,6 +45,7 @@ const Login = () => {
       navigate("/");
     } else {
       setError("Invalid username or password");
+      notify.error("Invalid username or password");
     }
   };
 
@@ -52,7 +66,9 @@ const Login = () => {
           <input
             type="text"
             id="username"
-            className="w-full p-2 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-[#04369a] mb-6 mt-2"
+            className={`w-full p-2 border rounded outline-none focus:ring-2 focus:ring-[#04369a] mb-6 mt-2 ${
+              errors.username ? "border-red-500" : "border-gray-300"
+            }`}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
@@ -63,7 +79,9 @@ const Login = () => {
           <input
             type="password"
             id="password"
-            className="w-full p-2 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-[#04369a] mb-6 mt-2"
+            className={`w-full p-2 border rounded outline-none focus:ring-2 focus:ring-[#04369a] mb-6 mt-2 ${
+              errors.password ? "border-red-500" : "border-gray-300"
+            }`}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />

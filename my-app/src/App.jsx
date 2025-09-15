@@ -13,6 +13,7 @@ import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import AdminLayout from "./admin/AdminLayout";
+import { Toaster } from "react-hot-toast";
 
 const ProtectedRoute = ({ children }) => {
   const user = useSelector((state) => state.auth.user);
@@ -28,25 +29,28 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState("");
 
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
+    <>
+      <Toaster position="top-right" />
+      <Routes>
+        <Route path="/login" element={<Login />} />
 
-      <Route
-        element={
-          <ProtectedRoute>
-            <Layout searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="/" element={<Home searchTerm={searchTerm} />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-      </Route>
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route path="products" element={<AdminProducts />} />
-        <Route path="users" element={<AdminUsers />} />
-        <Route path="dashboard" element={<AdminDashboard />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+        <Route
+          element={
+            <ProtectedRoute>
+              <Layout searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/" element={<Home searchTerm={searchTerm} />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+        </Route>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="products" element={<AdminProducts />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </>
   );
 }

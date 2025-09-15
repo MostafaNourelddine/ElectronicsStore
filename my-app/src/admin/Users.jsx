@@ -1,5 +1,7 @@
 // src/admin/Users.jsx
 import React, { useState, useEffect } from "react";
+import notify from "../utils/notify";
+import { validateRequired, hasErrors, isValidEmail } from "../utils/validation";
 import { useSelector, useDispatch } from "react-redux";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -24,6 +26,7 @@ const Users = () => {
     role: "user",
   });
   const [editData, setEditData] = useState(null);
+  const [errors, setErrors] = useState({});
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
@@ -46,13 +49,29 @@ const Users = () => {
 
   const handleAddUser = () => {
     const { name, username, email, password, role } = formData;
-    if (!name || !username || !email || !password || !role) {
-      alert("All fields are required!");
+    const nextErrors = validateRequired(formData, [
+      "name",
+      "username",
+      "email",
+      "password",
+      "role",
+    ]);
+    if (!nextErrors.email && !isValidEmail(email)) {
+      nextErrors.email = true;
+    }
+    setErrors(nextErrors);
+    if (hasErrors(nextErrors)) {
+      if (nextErrors.email) {
+        notify.error("Please enter a valid email");
+      } else {
+        notify.error("Please fill all required fields.");
+      }
       return;
     }
 
     if (users.some((u) => u.username === username)) {
-      alert("Username must be unique!");
+      setErrors((prev) => ({ ...prev, username: true }));
+      notify.error("Username must be unique!");
       return;
     }
 
@@ -66,11 +85,14 @@ const Users = () => {
       role: "user",
     });
     setShowAddDialog(false);
+    setErrors({});
+    notify.success("User added successfully");
   };
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       dispatch(removeUser(id));
+      notify.success("User deleted");
     }
   };
 
@@ -83,6 +105,7 @@ const Users = () => {
     dispatch(updateUserRole({ id: editData.id, role: editData.role }));
     setShowEditDialog(false);
     setEditData(null);
+    notify.success("User updated");
   };
 
   const renderForm = (data, isEdit = false) => (
@@ -93,26 +116,35 @@ const Users = () => {
             placeholder="Name"
             value={data.name}
             onChange={(e) => handleChange(e, "name", isEdit)}
-            className="w-full border rounded-lg p-3 shadow-sm"
+            className={`w-full border rounded-lg p-3 shadow-sm ${
+              !isEdit && errors.name ? "border-red-500" : ""
+            }`}
           />
           <InputText
             placeholder="Username"
             value={data.username}
             onChange={(e) => handleChange(e, "username", isEdit)}
-            className="w-full border rounded-lg p-3 shadow-sm"
+            className={`w-full border rounded-lg p-3 shadow-sm ${
+              !isEdit && errors.username ? "border-red-500" : ""
+            }`}
           />
           <InputText
             placeholder="Email"
+            type="email"
             value={data.email}
             onChange={(e) => handleChange(e, "email", isEdit)}
-            className="w-full border rounded-lg p-3 shadow-sm"
+            className={`w-full border rounded-lg p-3 shadow-sm ${
+              !isEdit && errors.email ? "border-red-500" : ""
+            }`}
           />
           <InputText
             placeholder="Password"
             type="password"
             value={data.password}
             onChange={(e) => handleChange(e, "password", isEdit)}
-            className="w-full border rounded-lg p-3 shadow-sm"
+            className={`w-full border rounded-lg p-3 shadow-sm ${
+              !isEdit && errors.password ? "border-red-500" : ""
+            }`}
           />
         </>
       )}
@@ -121,7 +153,9 @@ const Users = () => {
         options={roles}
         placeholder="Select Role"
         onChange={(e) => handleChange(e, "role", isEdit)}
-        className="w-full border rounded-lg p-3 shadow-sm"
+        className={`w-full border rounded-lg p-3 shadow-sm ${
+          !isEdit && errors.role ? "border-red-500" : ""
+        }`}
       />
     </div>
   );

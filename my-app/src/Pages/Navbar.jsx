@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSearch, selectSelf } from "../slices/ProductsSlice.js";
 import { logout, updatePassword } from "../slices/AuthSlice.js";
 import { Dialog } from "primereact/dialog";
+import notify from "../utils/notify";
 
 import Cart from "./Cart.jsx";
 
@@ -15,7 +16,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { search } = useSelector(selectSelf);
   const user = useSelector((state) => state.auth.user);
-  const [showAlert, setShowAlert] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
@@ -60,15 +60,14 @@ const Navbar = () => {
     setNewPassword("");
     setConfirmPassword("");
     setPasswordError("");
-    alert("Password updated successfully!");
+    notify.success("Password updated successfully!");
   };
 
   const handleAdminClick = () => {
     if (user && user.role === "admin") {
       navigate("/admin/dashboard");
     } else {
-      setShowAlert(true);
-      setTimeout(() => setShowAlert(false), 2000);
+      notify.error("Access denied. Admins only.");
     }
   };
 
@@ -139,12 +138,6 @@ const Navbar = () => {
       >
         <FaTools className="w-4 h-4" />
       </div>
-
-      {showAlert && (
-        <div className="absolute top-12 right-0 bg-red-500 text-white px-4 py-2 rounded shadow-lg animate-fadeInOut">
-          Access denied. Admins only.
-        </div>
-      )}
     </div>
   );
 

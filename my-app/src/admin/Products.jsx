@@ -1,5 +1,7 @@
 // src/admin/AdminProducts.jsx
 import React, { useState, useEffect } from "react";
+import notify from "../utils/notify";
+import { validateRequired, hasErrors } from "../utils/validation";
 import { useSelector, useDispatch } from "react-redux";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -34,6 +36,7 @@ const AdminProducts = () => {
   });
 
   const [editData, setEditData] = useState(null);
+  const [errors, setErrors] = useState({});
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
@@ -57,13 +60,22 @@ const AdminProducts = () => {
   const handleAddProduct = () => {
     const { category, name, description, price, image } = formData;
 
-    if (!category || !name || !description || !price || !image) {
-      alert("All fields are required!");
+    const nextErrors = validateRequired(formData, [
+      "category",
+      "name",
+      "description",
+      "price",
+      "image",
+    ]);
+    setErrors(nextErrors);
+    if (hasErrors(nextErrors)) {
+      notify.error("Please fill all required fields.");
       return;
     }
 
     if (allProducts.some((p) => p.name === name)) {
-      alert("Product name must be unique!");
+      setErrors((prev) => ({ ...prev, name: true }));
+      notify.error("Product name must be unique!");
       return;
     }
 
@@ -88,11 +100,14 @@ const AdminProducts = () => {
       image: "",
     });
     setShowAddDialog(false);
+    setErrors({});
+    notify.success("Product added successfully");
   };
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       dispatch(deleteProduct(id));
+      notify.success("Product deleted");
     }
   };
 
@@ -121,32 +136,42 @@ const AdminProducts = () => {
         options={categories}
         placeholder="Select Category"
         onChange={(e) => handleChange(e, "category", isEdit)}
-        className="w-full border rounded-lg p-2 shadow-sm"
+        className={`w-full border rounded-lg p-2 shadow-sm ${
+          !isEdit && errors.category ? "border-red-500" : ""
+        }`}
       />
       <InputText
         placeholder="Product Name"
         value={data.name}
         onChange={(e) => handleChange(e, "name", isEdit)}
-        className="w-full border rounded-lg p-3 shadow-sm"
+        className={`w-full border rounded-lg p-3 shadow-sm ${
+          !isEdit && errors.name ? "border-red-500" : ""
+        }`}
       />
       <InputText
         placeholder="Description"
         value={data.description}
         onChange={(e) => handleChange(e, "description", isEdit)}
-        className="w-full border rounded-lg p-3 shadow-sm"
+        className={`w-full border rounded-lg p-3 shadow-sm ${
+          !isEdit && errors.description ? "border-red-500" : ""
+        }`}
       />
       <InputText
         placeholder="Price"
         type="number"
         value={data.price}
         onChange={(e) => handleChange(e, "price", isEdit)}
-        className="w-full border rounded-lg p-3 shadow-sm"
+        className={`w-full border rounded-lg p-3 shadow-sm ${
+          !isEdit && errors.price ? "border-red-500" : ""
+        }`}
       />
       <InputText
         placeholder="Image URL"
         value={data.image}
         onChange={(e) => handleChange(e, "image", isEdit)}
-        className="w-full border rounded-lg p-3 shadow-sm"
+        className={`w-full border rounded-lg p-3 shadow-sm ${
+          !isEdit && errors.image ? "border-red-500" : ""
+        }`}
       />
     </div>
   );
