@@ -3,8 +3,7 @@ import React, { useState, useEffect } from "react";
 import notify from "../utils/notify";
 import { validateRequired, hasErrors, isValidEmail } from "../utils/validation";
 import { useSelector, useDispatch } from "react-redux";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
+import ReusableDataTable from "../components/common/ReusableDataTable";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
@@ -172,30 +171,36 @@ const Users = () => {
         />
       </div>
 
-      <DataTable value={users} paginator rows={6} className="shadow-lg rounded">
-        <Column field="id" header="ID" sortable />
-        <Column field="name" header="Name" sortable />
-        <Column field="username" header="Username" sortable />
-        <Column field="email" header="Email" sortable />
-        <Column field="role" header="Role" sortable />
-        <Column
-          header="Actions"
-          body={(rowData) => (
-            <div className="flex gap-2">
-              <Button
-                icon="pi pi-pencil"
-                className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-md"
-                onClick={() => handleEdit(rowData)}
-              />
-              <Button
-                icon="pi pi-trash"
-                className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md"
-                onClick={() => handleDelete(rowData.id)}
-              />
-            </div>
-          )}
-        />
-      </DataTable>
+      <ReusableDataTable
+        data={users}
+        paginator
+        rows={6}
+        className="shadow-lg rounded"
+        columns={[
+          { field: "id", header: "ID", sortable: true },
+          { field: "name", header: "Name", sortable: true },
+          { field: "username", header: "Username", sortable: true },
+          { field: "email", header: "Email", sortable: true },
+          { field: "role", header: "Role", sortable: true },
+          {
+            header: "Actions",
+            body: (rowData) => (
+              <div className="flex gap-2">
+                <Button
+                  icon="pi pi-pencil"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-md"
+                  onClick={() => handleEdit(rowData)}
+                />
+                <Button
+                  icon="pi pi-trash"
+                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md"
+                  onClick={() => handleDelete(rowData.id)}
+                />
+              </div>
+            ),
+          },
+        ]}
+      />
 
       {/* Add Dialog */}
       <Dialog
