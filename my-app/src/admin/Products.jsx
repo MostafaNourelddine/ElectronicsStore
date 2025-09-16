@@ -19,11 +19,18 @@ import {
   deleteProduct,
 } from "../slices/ProductsSlice";
 
+// Import category selector
+import { selectFilteredCategories } from "../slices/CategorySlice";
+
 const AdminProducts = () => {
   const dispatch = useDispatch();
   const products = useSelector(selectPaginatedProducts);
   const allProducts = useSelector(selectFilteredProducts);
   const { page, perPage } = useSelector((state) => state.products);
+
+  // Get categories from Redux store instead of hardcoded array
+  const categoriesFromStore = useSelector(selectFilteredCategories);
+  const categories = categoriesFromStore.map((cat) => cat.name); // Extract just the names for dropdown
 
   // Add & Edit form states
   const [formData, setFormData] = useState({
@@ -39,7 +46,6 @@ const AdminProducts = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
-  const categories = ["Phone", "Laptop", "Monitor"];
   const productList = useSelector((state) => state.products.list);
 
   useEffect(() => {
@@ -47,6 +53,10 @@ const AdminProducts = () => {
       dispatch(setProducts(productList));
     }
   }, [dispatch, productList.length]);
+
+  // Debug logging
+  console.log("Available categories:", categories);
+  console.log("Categories from store:", categoriesFromStore);
 
   const handleChange = (e, field, isEdit = false) => {
     if (isEdit) {
@@ -125,20 +135,33 @@ const AdminProducts = () => {
     );
     setShowEditDialog(false);
     setEditData(null);
+    notify.success("Product updated successfully");
   };
 
-  // 🔹 Shared form UI (nicer design)
+  // Shared form UI
   const renderForm = (data, isEdit = false) => (
     <div className="flex flex-col gap-4 p-2">
-      <Dropdown
-        value={data.category}
-        options={categories}
-        placeholder="Select Category"
-        onChange={(e) => handleChange(e, "category", isEdit)}
-        className={`w-full border rounded-lg p-2 shadow-sm ${
-          !isEdit && errors.category ? "border-red-500" : ""
-        }`}
-      />
+      <div>
+        <Dropdown
+          value={data.category}
+          options={categories}
+          placeholder={
+            categories.length > 0
+              ? "Select Category"
+              : "No categories available"
+          }
+          onChange={(e) => handleChange(e, "category", isEdit)}
+          className={`w-full border rounded-lg p-2 shadow-sm ${
+            !isEdit && errors.category ? "border-red-500" : ""
+          }`}
+          disabled={categories.length === 0}
+        />
+        {categories.length === 0 && (
+          <small className="text-red-500 mt-1 block">
+            No categories available. Please add categories first.
+          </small>
+        )}
+      </div>
       <InputText
         placeholder="Product Name"
         value={data.name}
@@ -179,15 +202,23 @@ const AdminProducts = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-[#04369a]">Products</h2>
-        <Button
-          label="Add Product"
-          icon="pi pi-plus"
-          className="bg-[#04369a] text-white px-5 py-2 rounded-lg shadow-md"
-          onClick={() => setShowAddDialog(true)}
-        />
+        <div className="flex gap-2">
+          {categories.length === 0 && (
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-2 rounded mr-2">
+              <small>Add categories first to create products</small>
+            </div>
+          )}
+          <Button
+            label="Add Product"
+            icon="pi pi-plus"
+            className="bg-[#04369a] text-white px-5 py-2 rounded-lg shadow-md"
+            onClick={() => setShowAddDialog(true)}
+            disabled={categories.length === 0}
+          />
+        </div>
       </div>
 
-      {/* ===== Reusable DataTable ===== */}
+      {/* Reusable DataTable */}
       <ReusableDataTable
         data={allProducts}
         paginator
@@ -200,7 +231,12 @@ const AdminProducts = () => {
           { field: "name", header: "Name", sortable: true },
           { field: "description", header: "Description" },
           { field: "category", header: "Category", sortable: true },
-          { field: "price", header: "Price ($)", sortable: true },
+          {
+            field: "price",
+            header: "Price ($)",
+            sortable: true,
+            body: (rowData) => `$${rowData.price?.toFixed(2) || "0.00"}`,
+          },
           {
             header: "Actions",
             body: (rowData) => (
@@ -221,7 +257,7 @@ const AdminProducts = () => {
         ]}
       />
 
-      {/* ===== Add Dialog ===== */}
+      {/* Add Dialog */}
       <Dialog
         header="Add Product"
         visible={showAddDialog}
@@ -239,6 +275,7 @@ const AdminProducts = () => {
               label="Add"
               className="bg-[#04369a] hover:bg-blue-800 text-white px-4 py-2 rounded-lg"
               onClick={handleAddProduct}
+              disabled={categories.length === 0}
             />
           </div>
         }
@@ -246,7 +283,7 @@ const AdminProducts = () => {
         {renderForm(formData)}
       </Dialog>
 
-      {/* ===== Edit Dialog ===== */}
+      {/* Edit Dialog */}
       <Dialog
         header="Edit Product"
         visible={showEditDialog}

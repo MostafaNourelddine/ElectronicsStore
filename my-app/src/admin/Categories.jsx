@@ -1,4 +1,3 @@
-// src/admin/AdminCategories.jsx
 import React, { useState, useEffect } from "react";
 import notify from "../utils/notify";
 import { validateRequired, hasErrors } from "../utils/validation";

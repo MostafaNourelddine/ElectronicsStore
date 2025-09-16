@@ -3,10 +3,10 @@ import { createSlice, createSelector } from "@reduxjs/toolkit";
 import products from "../Products";
 
 // Load saved categories from localStorage
-const savedCategories = JSON.parse(localStorage.getItem("categories"));
+const savedCategories = JSON.parse(localStorage.getItem("categories")) || [];
 
-// Generate categories dynamically from products
-const initialCategories = [
+// Generate categories dynamically from mock products
+const mockCategories = [
   ...new Set(products.map((p) => p.category).filter(Boolean)),
 ].map((cat, index) => ({
   id: index + 1,
@@ -14,10 +14,19 @@ const initialCategories = [
   description: `${cat} category`,
 }));
 
-const initialState =
-  savedCategories && savedCategories.length
-    ? { list: savedCategories, search: "", page: 1, perPage: 6 }
-    : { list: initialCategories, search: "", page: 1, perPage: 6 };
+// Merge mockCategories + savedCategories, remove duplicates by name
+const mergedCategoriesMap = new Map();
+mockCategories.forEach((cat) => mergedCategoriesMap.set(cat.name, cat));
+savedCategories.forEach((cat) => mergedCategoriesMap.set(cat.name, cat));
+const mergedCategories = Array.from(mergedCategoriesMap.values());
+
+// Initial state
+const initialState = {
+  list: mergedCategories,
+  search: "",
+  page: 1,
+  perPage: 6,
+};
 
 const CategorySlice = createSlice({
   name: "categories",
@@ -37,10 +46,10 @@ const CategorySlice = createSlice({
     addCategory: (state, action) => {
       const exists = state.list.find((c) => c.name === action.payload.name);
       if (!exists) {
-        const numericIds = state.list
-          .map((c) => Number(c.id))
-          .filter((n) => !isNaN(n));
-        const nextId = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
+        const nextId =
+          state.list.length > 0
+            ? Math.max(...state.list.map((c) => c.id)) + 1
+            : 1;
         state.list.push({ ...action.payload, id: nextId });
         localStorage.setItem("categories", JSON.stringify(state.list));
       }
