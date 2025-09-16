@@ -1,9 +1,8 @@
 // src/admin/Users.jsx
 import React, { useState, useEffect } from "react";
-import notify from "../utils/notify";
-import { validateRequired, hasErrors, isValidEmail } from "../utils/validation";
 import { useSelector, useDispatch } from "react-redux";
-import ReusableDataTable from "../components/common/ReusableDataTable";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
@@ -25,7 +24,6 @@ const Users = () => {
     role: "user",
   });
   const [editData, setEditData] = useState(null);
-  const [errors, setErrors] = useState({});
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
@@ -48,29 +46,13 @@ const Users = () => {
 
   const handleAddUser = () => {
     const { name, username, email, password, role } = formData;
-    const nextErrors = validateRequired(formData, [
-      "name",
-      "username",
-      "email",
-      "password",
-      "role",
-    ]);
-    if (!nextErrors.email && !isValidEmail(email)) {
-      nextErrors.email = true;
-    }
-    setErrors(nextErrors);
-    if (hasErrors(nextErrors)) {
-      if (nextErrors.email) {
-        notify.error("Please enter a valid email");
-      } else {
-        notify.error("Please fill all required fields.");
-      }
+    if (!name || !username || !email || !password || !role) {
+      alert("All fields are required!");
       return;
     }
 
     if (users.some((u) => u.username === username)) {
-      setErrors((prev) => ({ ...prev, username: true }));
-      notify.error("Username must be unique!");
+      alert("Username must be unique!");
       return;
     }
 
@@ -84,14 +66,11 @@ const Users = () => {
       role: "user",
     });
     setShowAddDialog(false);
-    setErrors({});
-    notify.success("User added successfully");
   };
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       dispatch(removeUser(id));
-      notify.success("User deleted");
     }
   };
 
@@ -104,7 +83,6 @@ const Users = () => {
     dispatch(updateUserRole({ id: editData.id, role: editData.role }));
     setShowEditDialog(false);
     setEditData(null);
-    notify.success("User updated");
   };
 
   const renderForm = (data, isEdit = false) => (
@@ -115,35 +93,26 @@ const Users = () => {
             placeholder="Name"
             value={data.name}
             onChange={(e) => handleChange(e, "name", isEdit)}
-            className={`w-full border rounded-lg p-3 shadow-sm ${
-              !isEdit && errors.name ? "border-red-500" : ""
-            }`}
+            className="w-full border rounded-lg p-3 shadow-sm"
           />
           <InputText
             placeholder="Username"
             value={data.username}
             onChange={(e) => handleChange(e, "username", isEdit)}
-            className={`w-full border rounded-lg p-3 shadow-sm ${
-              !isEdit && errors.username ? "border-red-500" : ""
-            }`}
+            className="w-full border rounded-lg p-3 shadow-sm"
           />
           <InputText
             placeholder="Email"
-            type="email"
             value={data.email}
             onChange={(e) => handleChange(e, "email", isEdit)}
-            className={`w-full border rounded-lg p-3 shadow-sm ${
-              !isEdit && errors.email ? "border-red-500" : ""
-            }`}
+            className="w-full border rounded-lg p-3 shadow-sm"
           />
           <InputText
             placeholder="Password"
             type="password"
             value={data.password}
             onChange={(e) => handleChange(e, "password", isEdit)}
-            className={`w-full border rounded-lg p-3 shadow-sm ${
-              !isEdit && errors.password ? "border-red-500" : ""
-            }`}
+            className="w-full border rounded-lg p-3 shadow-sm"
           />
         </>
       )}
@@ -152,9 +121,7 @@ const Users = () => {
         options={roles}
         placeholder="Select Role"
         onChange={(e) => handleChange(e, "role", isEdit)}
-        className={`w-full border rounded-lg p-3 shadow-sm ${
-          !isEdit && errors.role ? "border-red-500" : ""
-        }`}
+        className="w-full border rounded-lg p-3 shadow-sm"
       />
     </div>
   );
@@ -171,36 +138,30 @@ const Users = () => {
         />
       </div>
 
-      <ReusableDataTable
-        data={users}
-        paginator
-        rows={6}
-        className="shadow-lg rounded"
-        columns={[
-          { field: "id", header: "ID", sortable: true },
-          { field: "name", header: "Name", sortable: true },
-          { field: "username", header: "Username", sortable: true },
-          { field: "email", header: "Email", sortable: true },
-          { field: "role", header: "Role", sortable: true },
-          {
-            header: "Actions",
-            body: (rowData) => (
-              <div className="flex gap-2">
-                <Button
-                  icon="pi pi-pencil"
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-md"
-                  onClick={() => handleEdit(rowData)}
-                />
-                <Button
-                  icon="pi pi-trash"
-                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md"
-                  onClick={() => handleDelete(rowData.id)}
-                />
-              </div>
-            ),
-          },
-        ]}
-      />
+      <DataTable value={users} paginator rows={6} className="shadow-lg rounded">
+        <Column field="id" header="ID" sortable />
+        <Column field="name" header="Name" sortable />
+        <Column field="username" header="Username" sortable />
+        <Column field="email" header="Email" sortable />
+        <Column field="role" header="Role" sortable />
+        <Column
+          header="Actions"
+          body={(rowData) => (
+            <div className="flex gap-2">
+              <Button
+                icon="pi pi-pencil"
+                className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-md"
+                onClick={() => handleEdit(rowData)}
+              />
+              <Button
+                icon="pi pi-trash"
+                className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md"
+                onClick={() => handleDelete(rowData.id)}
+              />
+            </div>
+          )}
+        />
+      </DataTable>
 
       {/* Add Dialog */}
       <Dialog

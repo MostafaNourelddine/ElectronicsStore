@@ -1,4 +1,4 @@
-// src/admin/AdminProducts.jsx
+// src/admin/AdminCategories.jsx
 import React, { useState, useEffect } from "react";
 import notify from "../utils/notify";
 import { validateRequired, hasErrors } from "../utils/validation";
@@ -6,47 +6,41 @@ import { useSelector, useDispatch } from "react-redux";
 import ReusableDataTable from "../components/common/ReusableDataTable";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import { Dropdown } from "primereact/dropdown";
 import { Dialog } from "primereact/dialog";
 
 import {
-  setProducts,
-  selectFilteredProducts,
-  selectPaginatedProducts,
+  setCategories,
+  selectFilteredCategories,
+  selectPaginatedCategories,
   setPage,
-  addProduct,
-  updateProduct,
-  deleteProduct,
-} from "../slices/ProductsSlice";
+  addCategory,
+  updateCategory,
+  deleteCategory,
+} from "../slices/CategorySlice";
 
-const AdminProducts = () => {
+const AdminCategories = () => {
   const dispatch = useDispatch();
-  const products = useSelector(selectPaginatedProducts);
-  const allProducts = useSelector(selectFilteredProducts);
-  const { page, perPage } = useSelector((state) => state.products);
+  const categories = useSelector(selectPaginatedCategories);
+  const allCategories = useSelector(selectFilteredCategories);
+  const { page, perPage } = useSelector((state) => state.categories);
 
   // Add & Edit form states
   const [formData, setFormData] = useState({
-    category: "",
     name: "",
     description: "",
-    price: "",
-    image: "",
   });
-
   const [editData, setEditData] = useState(null);
   const [errors, setErrors] = useState({});
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
-  const categories = ["Phone", "Laptop", "Monitor"];
-  const productList = useSelector((state) => state.products.list);
+  const categoryList = useSelector((state) => state.categories.list);
 
   useEffect(() => {
-    if (!productList || productList.length === 0) {
-      dispatch(setProducts(productList));
+    if (!categoryList || categoryList.length === 0) {
+      dispatch(setCategories(allCategories));
     }
-  }, [dispatch, productList.length]);
+  }, [dispatch, categoryList.length, allCategories]);
 
   const handleChange = (e, field, isEdit = false) => {
     if (isEdit) {
@@ -56,91 +50,68 @@ const AdminProducts = () => {
     }
   };
 
-  const handleAddProduct = () => {
-    const { category, name, description, price, image } = formData;
+  const handleAddCategory = () => {
+    const { name, description } = formData;
 
-    const nextErrors = validateRequired(formData, [
-      "category",
-      "name",
-      "description",
-      "price",
-      "image",
-    ]);
+    const nextErrors = validateRequired(formData, ["name", "description"]);
     setErrors(nextErrors);
     if (hasErrors(nextErrors)) {
       notify.error("Please fill all required fields.");
       return;
     }
 
-    if (allProducts.some((p) => p.name === name)) {
+    if (allCategories.some((c) => c.name === name)) {
       setErrors((prev) => ({ ...prev, name: true }));
-      notify.error("Product name must be unique!");
+      notify.error("Category name must be unique!");
       return;
     }
 
     const nextId =
-      allProducts.length > 0
-        ? Math.max(...allProducts.map((p) => p.id)) + 1
+      allCategories.length > 0
+        ? Math.max(...allCategories.map((c) => c.id)) + 1
         : 1;
 
     dispatch(
-      addProduct({
+      addCategory({
         id: nextId,
         ...formData,
-        price: Number(price),
       })
     );
 
-    setFormData({
-      category: "",
-      name: "",
-      description: "",
-      price: "",
-      image: "",
-    });
+    setFormData({ name: "", description: "" });
     setShowAddDialog(false);
     setErrors({});
-    notify.success("Product added successfully");
+    notify.success("Category added successfully");
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      dispatch(deleteProduct(id));
-      notify.success("Product deleted");
+    if (window.confirm("Are you sure you want to delete this category?")) {
+      dispatch(deleteCategory(id));
+      notify.success("Category deleted");
     }
   };
 
-  const handleEdit = (product) => {
-    setEditData({ ...product });
+  const handleEdit = (category) => {
+    setEditData({ ...category });
     setShowEditDialog(true);
   };
 
   const handleUpdate = () => {
     dispatch(
-      updateProduct({
-        ...allProducts.find((p) => p.id === editData.id), // keep all original fields
-        ...editData, // overwrite only the edited fields
-        price: Number(editData.price),
+      updateCategory({
+        ...allCategories.find((c) => c.id === editData.id),
+        ...editData,
       })
     );
     setShowEditDialog(false);
     setEditData(null);
   };
 
-  // 🔹 Shared form UI (nicer design)
+  // Shared form UI
   const renderForm = (data, isEdit = false) => (
     <div className="flex flex-col gap-4 p-2">
-      <Dropdown
-        value={data.category}
-        options={categories}
-        placeholder="Select Category"
-        onChange={(e) => handleChange(e, "category", isEdit)}
-        className={`w-full border rounded-lg p-2 shadow-sm ${
-          !isEdit && errors.category ? "border-red-500" : ""
-        }`}
-      />
       <InputText
-        placeholder="Product Name"
+        placeholder="Category Name"
         value={data.name}
         onChange={(e) => handleChange(e, "name", isEdit)}
         className={`w-full border rounded-lg p-3 shadow-sm ${
@@ -155,41 +126,23 @@ const AdminProducts = () => {
           !isEdit && errors.description ? "border-red-500" : ""
         }`}
       />
-      <InputText
-        placeholder="Price"
-        type="number"
-        value={data.price}
-        onChange={(e) => handleChange(e, "price", isEdit)}
-        className={`w-full border rounded-lg p-3 shadow-sm ${
-          !isEdit && errors.price ? "border-red-500" : ""
-        }`}
-      />
-      <InputText
-        placeholder="Image URL"
-        value={data.image}
-        onChange={(e) => handleChange(e, "image", isEdit)}
-        className={`w-full border rounded-lg p-3 shadow-sm ${
-          !isEdit && errors.image ? "border-red-500" : ""
-        }`}
-      />
     </div>
   );
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-[#04369a]">Products</h2>
+        <h2 className="text-2xl font-bold text-[#04369a]">Categories</h2>
         <Button
-          label="Add Product"
+          label="Add Category"
           icon="pi pi-plus"
           className="bg-[#04369a] text-white px-5 py-2 rounded-lg shadow-md"
           onClick={() => setShowAddDialog(true)}
         />
       </div>
 
-      {/* ===== Reusable DataTable ===== */}
       <ReusableDataTable
-        data={allProducts}
+        data={allCategories}
         paginator
         rows={perPage}
         first={(page - 1) * perPage}
@@ -199,8 +152,6 @@ const AdminProducts = () => {
           { field: "id", header: "ID", sortable: true },
           { field: "name", header: "Name", sortable: true },
           { field: "description", header: "Description" },
-          { field: "category", header: "Category", sortable: true },
-          { field: "price", header: "Price ($)", sortable: true },
           {
             header: "Actions",
             body: (rowData) => (
@@ -221,9 +172,9 @@ const AdminProducts = () => {
         ]}
       />
 
-      {/* ===== Add Dialog ===== */}
+      {/* Add Dialog */}
       <Dialog
-        header="Add Product"
+        header="Add Category"
         visible={showAddDialog}
         style={{ width: "450px" }}
         modal
@@ -238,7 +189,7 @@ const AdminProducts = () => {
             <Button
               label="Add"
               className="bg-[#04369a] hover:bg-blue-800 text-white px-4 py-2 rounded-lg"
-              onClick={handleAddProduct}
+              onClick={handleAddCategory}
             />
           </div>
         }
@@ -246,9 +197,9 @@ const AdminProducts = () => {
         {renderForm(formData)}
       </Dialog>
 
-      {/* ===== Edit Dialog ===== */}
+      {/* Edit Dialog */}
       <Dialog
-        header="Edit Product"
+        header="Edit Category"
         visible={showEditDialog}
         style={{ width: "450px" }}
         modal
@@ -274,4 +225,4 @@ const AdminProducts = () => {
   );
 };
 
-export default AdminProducts;
+export default AdminCategories;

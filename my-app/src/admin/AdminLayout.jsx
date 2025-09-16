@@ -37,6 +37,18 @@ const AdminLayout = () => {
           >
             <FaBox /> Products
           </NavLink>
+          <NavLink
+            to="/admin/Categories"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-2 rounded-lg transition ${
+                isActive
+                  ? "bg-white text-[#04369a] font-semibold"
+                  : "hover:bg-white/10"
+              }`
+            }
+          >
+            <FaBox /> Categories
+          </NavLink>
 
           <NavLink
             to="/admin/users"

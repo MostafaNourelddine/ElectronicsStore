@@ -9,7 +9,7 @@ import AdminProducts from "./admin/Products";
 import AdminDashboard from "./admin/Dashboard";
 import AdminUsers from "./admin/Users";
 import AdminLayout from "./admin/AdminLayout";
-
+import Categories from "./admin/categories";
 const ProtectedRoute = ({ children }) => {
   const user = useSelector((state) => state.auth.user);
 
@@ -40,6 +40,7 @@ export default function AppRoutes({ searchTerm, setSearchTerm }) {
         <Route path="products" element={<AdminProducts />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="categories" element={<Categories />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />

@@ -5,8 +5,9 @@ import {
   setProducts,
   selectPaginatedProducts,
   selectFilteredProducts,
-  selectSelf,
+  selectSelf as selectProductsSelf,
 } from "../slices/ProductsSlice.js";
+import { selectFilteredCategories } from "../slices/CategorySlice.js";
 import mockProducts from "../Products.js";
 import Item from "../components/Item.jsx";
 import { Paginator } from "primereact/paginator";
@@ -14,27 +15,30 @@ import { Paginator } from "primereact/paginator";
 const HomePageItems = () => {
   const dispatch = useDispatch();
 
+  // --- Products ---
   const allFiltered = useSelector(selectFilteredProducts);
-  const { page, perPage, list } = useSelector(selectSelf);
-
-  const [filteredCategory, setFilteredCategory] = useState("All");
-  const categories = [
-    "All",
-    ...new Set(allFiltered.map((item) => item.category)),
-  ];
-
-  const categoryFiltered = allFiltered.filter(
-    (item) => filteredCategory === "All" || item.category === filteredCategory
-  );
-  const start = (page - 1) * perPage;
-  const end = start + perPage;
-  const items = categoryFiltered.slice(start, end);
+  const { page, perPage, list } = useSelector(selectProductsSelf);
 
   useEffect(() => {
     if (list.length === 0) {
       dispatch(setProducts(mockProducts));
     }
   }, [dispatch, list.length]);
+
+  // --- Categories from CategorySlice ---
+  const categoriesFromSlice = useSelector(selectFilteredCategories);
+  const categories = ["All", ...categoriesFromSlice.map((c) => c.name)];
+
+  const [filteredCategory, setFilteredCategory] = useState("All");
+
+  // --- Filter products by selected category ---
+  const categoryFiltered = allFiltered.filter(
+    (item) => filteredCategory === "All" || item.category === filteredCategory
+  );
+
+  const start = (page - 1) * perPage;
+  const end = start + perPage;
+  const items = categoryFiltered.slice(start, end);
 
   return (
     <>

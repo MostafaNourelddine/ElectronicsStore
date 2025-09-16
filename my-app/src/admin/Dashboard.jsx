@@ -4,6 +4,7 @@ import mockUsers from "../users";
 import mockProducts from "../Products";
 
 const Dashboard = () => {
+  // --- Users ---
   const usersFromSlice = useSelector((state) => state.auth.users || []);
   const users = [
     ...mockUsers,
@@ -11,7 +12,6 @@ const Dashboard = () => {
       (u) => !mockUsers.find((mu) => mu.username === u.username)
     ),
   ];
-
   const totalUsers = users.length;
   const roles = [...new Set(users.map((u) => u.role))];
   const usersPerRole = roles.map((role) => ({
@@ -19,6 +19,7 @@ const Dashboard = () => {
     count: users.filter((u) => u.role === role).length,
   }));
 
+  // --- Products ---
   const productsFromSlice = useSelector((state) => state.products.list || []);
   const products = [
     ...mockProducts,
@@ -26,12 +27,18 @@ const Dashboard = () => {
       (p) => !mockProducts.find((mp) => mp.id === p.id)
     ),
   ];
-
   const totalProducts = products.length;
-  const categories = [...new Set(products.map((p) => p.category))];
-  const productsPerCategory = categories.map((cat) => ({
-    category: cat,
-    count: products.filter((p) => p.category === cat).length,
+
+  // --- Categories from slice ---
+  const categoriesFromSlice = useSelector(
+    (state) => state.categories.list || []
+  );
+  const totalCategories = categoriesFromSlice.length;
+
+  // Products per category (only include categories that exist in slice)
+  const productsPerCategory = categoriesFromSlice.map((c) => ({
+    category: c.name,
+    count: products.filter((p) => p.category === c.name).length,
   }));
 
   return (
@@ -45,7 +52,7 @@ const Dashboard = () => {
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold">Total Categories</h2>
-          <p className="text-3xl font-bold mt-2">{categories.length}</p>
+          <p className="text-3xl font-bold mt-2">{totalCategories}</p>
         </div>
       </div>
 
