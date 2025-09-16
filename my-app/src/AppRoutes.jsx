@@ -9,7 +9,7 @@ import AdminProducts from "./admin/Products";
 import AdminDashboard from "./admin/Dashboard";
 import AdminUsers from "./admin/Users";
 import AdminLayout from "./admin/AdminLayout";
-import Categories from "./admin/categories";
+import Categories from "./admin/Categories";
 const ProtectedRoute = ({ children }) => {
   const user = useSelector((state) => state.auth.user);
 
